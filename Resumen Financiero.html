@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EcoFinanzas · Asistente 3 pasos (v5 con menú + soporte)</title>
+  <style>
+    :root{--bg:#f5f7fb;--card:#fff;--ink:#0e1726;--muted:#5b6573;--brand:#1a73e8;--line:#e6eaf0;--ok:#2563eb;--radius:14px;--shadow:0 6px 24px rgba(17,24,39,.06)}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{max-width:1120px;margin:0 auto;padding:24px}
+    .appbar{background:var(--card);border-bottom:1px solid var(--line)}
+    .bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .logo{display:flex;gap:10px;align-items:center;color:var(--brand);font-weight:800;font-size:22px}
+    .logo svg{width:22px;height:22px}
+    .step{color:var(--muted);font-weight:700}
+
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-top:22px}
+    .card-hd{padding:22px;border-bottom:1px solid var(--line)}
+    .card-bd{padding:22px}
+    h1{margin:0 0 6px}
+    .sub{color:var(--muted)}
+    .grid2{display:grid;gap:18px}
+    @media(min-width:900px){.grid2{grid-template-columns:1fr 1fr}}
+    .row{display:grid;gap:14px}
+    @media(min-width:860px){.row.two{grid-template-columns:1fr 1fr}}
+    label{display:block;font-weight:600;margin:8px 0 6px}
+    input[type="text"],input[type="number"],select{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px}
+    .switch{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+    .switch input{display:none}
+    .switch label{padding:8px 14px;font-weight:700;cursor:pointer;color:#42526b}
+    .switch input:checked+label{background:var(--ok);color:#fff}
+    .block{border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:16px}
+    .muted{color:var(--muted)}
+    .flow{display:none;border:1px dashed var(--line);border-radius:12px;padding:16px;margin-top:16px}
+    .flow h3{margin-top:0}
+    .badge{display:inline-block;background:#eef2ff;color:#1f3bb3;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;margin-left:8px}
+    .actions{display:flex;justify-content:flex-end;gap:12px;padding:18px 22px}
+    .btn{appearance:none;border:0;border-radius:12px;padding:12px 18px;font-weight:700;cursor:pointer}
+    .btn.ghost{background:#eef2ff;color:#1f3bb3}
+    .btn.primary{background:var(--brand);color:#fff}
+    .kv{display:grid;grid-template-columns:220px 1fr;gap:8px 14px}
+
+    /* === Menú hamburguesa y modal soporte === */
+    .hamb{border:0;background:transparent;cursor:pointer;padding:8px;border-radius:10px}
+    .hamb:focus{outline:2px solid var(--brand)}
+    .hamb svg{width:22px;height:22px}
+    .menu{position:relative}
+    .menu-panel{position:absolute;right:0;top:44px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);min-width:230px;display:none;z-index:50}
+    .menu-panel.open{display:block}
+    .menu-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-weight:600}
+    .menu-item:hover{background:#eef2ff}
+    .divider{height:1px;background:var(--line);margin:6px 0}
+
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:60}
+    .modal.open{display:flex}
+    .modal-card{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);max-width:640px;width:92%;padding:18px}
+    .modal-card h2{margin-top:0}
+    .modal-card textarea{width:100%;min-height:140px;padding:12px;border:1px solid var(--line);border-radius:10px}
+    .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
+
+    .toast{position:fixed;right:20px;bottom:20px;background:#0ea5e9;color:#fff;padding:10px 14px;border-radius:10px;display:none;z-index:70}
+
+    /* Dark mode */
+    body.dark{--bg:#0b1220;--card:#0f172a;--ink:#e5e7eb;--muted:#9aa3b2;--line:#1f2937}
+    body.dark .btn.ghost{background:#1f2937;color:#e5e7eb}
+    body.dark .menu-item:hover{background:#1f2937}
+  </style>
+</head>
+<body>
+  <header class="appbar">
+    <div class="wrap bar">
+      <div class="logo" aria-label="EcoFinanzas">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2v6M12 16v6M2 12h6M16 12h6M5 5l4 4M15 15l4 4M5 19l4-4M15 9l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>EcoFinanzas</span>
+      </div>
+
+      <div id="stepText" class="step">Paso 1 de 3</div>
+
+      <!-- Menú hamburguesa -->
+      <div class="menu">
+        <button id="menuBtn" class="hamb" aria-label="Menú">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div id="menuPanel" class="menu-panel" role="menu" aria-hidden="true">
+          <div id="miTheme" class="menu-item">Modo oscuro</div>
+          <div id="miLang" class="menu-item">English / Español</div>
+          <div class="divider"></div>
+          <div id="miSupport" class="menu-item">Soporte</div>
+          <div id="miLogout" class="menu-item">Cerrar sesión</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- PASO 1: Perfil del hogar -->
+    <section id="view-1" class="card" aria-labelledby="ttl1">
+      <div class="card-hd">
+        <h1 id="ttl1">Perfil del hogar</h1>
+        <p class="sub">Estas respuestas definirán qué preguntas verás en el siguiente paso.</p>
+      </div>
+      <div class="card-bd">
+        <form id="form1" class="row">
+          <div class="block">
+            <h3>Estado Civil</h3>
+            <div class="row">
+              <label><input type="radio" name="estadoCivil" value="soltero" required> Soltero/a</label>
+              <label><input type="radio" name="estadoCivil" value="pareja_sin_hijos"> Casado/a o en pareja sin hijos</label>
+              <label><input type="radio" name="estadoCivil" value="pareja_con_hijos"> Casado/a o en pareja con hijos</label>
+              <label><input type="radio" name="estadoCivil" value="otro"> Otro</label>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="block">
+              <h3>Dependientes</h3>
+              <p class="muted">Incluye hijos, adultos mayores o personas con discapacidad.</p>
+              <div class="switch" role="group" aria-label="Tiene dependientes">
+                <input id="dep_si" type="radio" name="tieneDependientes" value="si">
+                <label for="dep_si">Sí</label>
+                <input id="dep_no" type="radio" name="tieneDependientes" value="no" checked>
+                <label for="dep_no">No</label>
+              </div>
+            </div>
+
+            <div class="block">
+              <h3>Ingresos del Hogar</h3>
+              <label class="muted" style="font-weight:700">¿Tu pareja aporta ingresos?</label>
+              <div class="switch" role="group" aria-label="Pareja aporta">
+                <input id="p_si" type="radio" name="parejaAporta" value="si">
+                <label for="p_si">Sí</label>
+                <input id="p_no" type="radio" name="parejaAporta" value="no" checked>
+                <label for="p_no">No</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="block">
+            <h3>Apoyo a Terceros</h3>
+            <div class="switch" role="group" aria-label="Apoya terceros">
+              <input id="t_si" type="radio" name="apoyaTerceros" value="si">
+              <label for="t_si">Sí</label>
+              <input id="t_no" type="radio" name="apoyaTerceros" value="no" checked>
+              <label for="t_no">No</label>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" type="submit">Continuar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- PASO 2: Siempre base + condicionales -->
+    <section id="view-2" class="card" aria-labelledby="ttl2" hidden>
+      <div class="card-hd">
+        <h1 id="ttl2">Tu información mensual</h1>
+        <p class="sub">Siempre verás preguntas base. Si aplican, agregamos otras según tu perfil.</p>
+      </div>
+      <div class="card-bd">
+        <form id="form2" class="row">
+          <!-- BASE -->
+          <div id="flowBase" class="flow" style="display:block" aria-live="polite">
+            <h3>Datos base <span class="badge">Siempre</span></h3>
+            <div class="row two">
+              <div>
+                <label for="ingresoMensual">¿Cuánto ganas al mes?</label>
+                <input id="ingresoMensual" name="ingresoMensual" type="number" min="0" placeholder="$" />
+              </div>
+              <div>
+                <label for="otrosIngresos">Otros ingresos (opcional)</label>
+                <input id="otrosIngresos" name="otrosIngresos" type="number" min="0" placeholder="$" />
+              </div>
+            </div>
+
+            <div class="row two">
+              <div>
+                <label for="serviciosBasicos">Luz, agua, internet y cable</label>
+                <input id="serviciosBasicos" name="serviciosBasicos" type="number" min="0" placeholder="$" />
+              </div>
+              <div>
+                <label for="suscripciones">Suscripciones (Netflix, Spotify, Disney+, HBO, etc.)</label>
+                <input id="suscripciones" name="suscripciones" type="number" min="0" placeholder="$" />
+              </div>
+            </div>
+
+            <div class="row two">
+              <div>
+                <label for="transportePublico">Transporte público (bus, taxi, mototaxi, Uber, etc.)</label>
+                <input id="transportePublico" name="transportePublico" type="number" min="0" placeholder="$" />
+              </div>
+              <div>
+                <label for="gasolina">Gasolina (si tienes auto)</label>
+                <input id="gasolina" name="gasolina" type="number" min="0" placeholder="$" />
+              </div>
+            </div>
+
+            <div class="row two">
+              <div>
+                <label for="alimentacion">Alimentación</label>
+                <input id="alimentacion" name="alimentacion" type="number" min="0" placeholder="$" />
+              </div>
+              <div>
+                <label for="renta">Renta / Hipoteca</label>
+                <input id="renta" name="renta" type="number" min="0" placeholder="$" />
+              </div>
+            </div>
+
+            <div class="row two">
+              <div>
+                <label for="salud">Salud (seguro, medicinas)</label>
+                <input id="salud" name="salud" type="number" min="0" placeholder="$" />
+              </div>
+              <div>
+                <label for="deudas">Deudas o préstamos (tarjeta, banco)</label>
+                <input id="deudas" name="deudas" type="number" min="0" placeholder="$" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Apoyo a terceros -->
+          <div id="flowApoyo" class="flow" aria-live="polite">
+            <h3>Apoyo a Terceros <span class="badge">Si apoyas</span></h3>
+            <div class="row two">
+              <div>
+                <label for="relacion">Relación</label>
+                <select id="relacion" name="relacion">
+                  <option value="Padres">Padres</option>
+                  <option value="Abuelos">Abuelos</option>
+                  <option value="Hermano/a">Hermano/a</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+              <div>
+                <label for="frecuenciaApoyo">Frecuencia</label>
+                <select id="frecuenciaApoyo" name="frecuenciaApoyo">
+                  <option value="Mensual">Mensual</option>
+                  <option value="Ocasional">Ocasional</option>
+                </select>
+              </div>
+            </div>
+            <div class="row two">
+              <div>
+                <label for="montoApoyo">¿Cuánto dinero destinas al mes?</label>
+                <input id="montoApoyo" name="montoApoyo" type="number" min="0" placeholder="$" />
+              </div>
+              <div>
+                <label for="conceptoApoyo">Concepto</label>
+                <select id="conceptoApoyo" name="conceptoApoyo">
+                  <option value="Alimentación">Alimentación</option>
+                  <option value="Salud">Salud</option>
+                  <option value="Educación">Educación</option>
+                  <option value="Vivienda">Vivienda</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dependientes -->
+          <div id="flowDependientes" class="flow" aria-live="polite">
+            <h3>Gastos por Dependientes <span class="badge">Si tienes dependientes</span></h3>
+            <div class="row two">
+              <div>
+                <label for="cantidadDependientes">¿Cuántos dependientes?</label>
+                <input id="cantidadDependientes" name="cantidadDependientes" type="number" min="1" value="1" />
+              </div>
+              <div>
+                <label for="gastoMensualDependientes">Gasto mensual estimado</label>
+                <input id="gastoMensualDependientes" name="gastoMensualDependientes" type="number" min="0" placeholder="$" />
+              </div>
+            </div>
+            <div class="row two">
+              <div>
+                <label for="educacionDep">Educación</label>
+                <input id="educacionDep" name="educacionDep" type="number" min="0" placeholder="$" />
+              </div>
+              <div>
+                <label for="saludDep">Salud</label>
+                <input id="saludDep" name="saludDep" type="number" min="0" placeholder="$" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Pareja -->
+          <div id="flowPareja" class="flow" aria-live="polite">
+            <h3>Relación de pareja <span class="badge">Si estás en pareja</span></h3>
+            <div id="parejaNoAporta" class="row two" style="display:none">
+              <div>
+                <label for="montoParaPareja">¿Cuánto destinas a tu pareja al mes?</label>
+                <input id="montoParaPareja" name="montoParaPareja" type="number" min="0" placeholder="$" />
+              </div>
+              <div>
+                <label for="comentarioPareja">Comentario (opcional)</label>
+                <input id="comentarioPareja" name="comentarioPareja" type="text" placeholder="Ej. salidas, regalos, apoyo ocasional" />
+              </div>
+            </div>
+            <div id="parejaSiAporta" class="row two" style="display:none">
+              <div>
+                <label for="montoParejaAporta">¿Cuánto aporta tu pareja al mes?</label>
+                <input id="montoParejaAporta" name="montoParejaAporta" type="number" min="0" placeholder="$" />
+              </div>
+              <div>
+                <label for="comentarioParejaAporta">Comentario (opcional)</label>
+                <input id="comentarioParejaAporta" name="comentarioParejaAporta" type="text" placeholder="Ej. cómo se reparten gastos, notas" />
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn ghost" type="button" id="back1">Anterior</button>
+            <button class="btn primary" type="submit">Siguiente</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- PASO 3: Resumen -->
+    <section id="view-3" class="card" aria-labelledby="ttl3" hidden>
+      <div class="card-hd">
+        <h1 id="ttl3">Resumen</h1>
+        <p class="sub">Mostramos lo base y lo adicional según tu caso.</p>
+      </div>
+      <div class="card-bd row">
+        <div id="sumPerfil" class="block">
+          <h3>Perfil del Hogar</h3>
+          <div class="kv">
+            <div class="muted">Estado civil</div><div id="s_estado">—</div>
+            <div class="muted">Dependientes</div><div id="s_dep">—</div>
+            <div class="muted">Apoya a terceros</div><div id="s_apoya">—</div>
+            <div class="muted">Pareja aporta</div><div id="s_pareja">—</div>
+          </div>
+        </div>
+
+        <div id="cardBase" class="block">
+          <h3>Datos base</h3>
+          <div class="kv">
+            <div class="muted">Ingreso mensual</div><div id="s_ingresoMensual">—</div>
+            <div class="muted">Otros ingresos</div><div id="s_otrosIngresos">—</div>
+            <div class="muted">Servicios</div><div id="s_serviciosBasicos">—</div>
+            <div class="muted">Suscripciones</div><div id="s_suscripciones">—</div>
+            <div class="muted">Transporte público</div><div id="s_transportePublico">—</div>
+            <div class="muted">Gasolina</div><div id="s_gasolina">—</div>
+            <div class="muted">Alimentación</div><div id="s_alimentacion">—</div>
+            <div class="muted">Renta / Hipoteca</div><div id="s_renta">—</div>
+            <div class="muted">Salud</div><div id="s_salud">—</div>
+            <div class="muted">Deudas</div><div id="s_deudas">—</div>
+          </div>
+        </div>
+
+        <div id="cardTotales" class="block">
+          <h3>Totales del mes</h3>
+          <div class="kv">
+            <div class="muted">Gasto total</div><div id="s_totalGastos">—</div>
+            <div class="muted">Dinero libre</div><div id="s_dineroLibre">—</div>
+          </div>
+        </div>
+
+        <div id="cardApoyo" class="block" hidden>
+          <h3>Apoyo a Terceros</h3>
+          <div class="kv">
+            <div class="muted">Relación</div><div id="s_relacion">—</div>
+            <div class="muted">Frecuencia</div><div id="s_frecuenciaApoyo">—</div>
+            <div class="muted">Monto mensual</div><div id="s_montoApoyo">—</div>
+            <div class="muted">Concepto</div><div id="s_conceptoApoyo">—</div>
+          </div>
+        </div>
+
+        <div id="cardDep" class="block" hidden>
+          <h3>Dependientes</h3>
+          <div class="kv">
+            <div class="muted">Cantidad</div><div id="s_cantidadDependientes">—</div>
+            <div class="muted">Gasto mensual</div><div id="s_gastoMensualDependientes">—</div>
+            <div class="muted">Educación</div><div id="s_educacionDep">—</div>
+            <div class="muted">Salud</div><div id="s_saludDep">—</div>
+          </div>
+        </div>
+
+        <div id="cardPareja" class="block" hidden>
+          <h3>Pareja</h3>
+          <div class="kv">
+            <div id="rowMontoPara" class="muted">Monto que destinas</div><div id="s_montoParaPareja">—</div>
+            <div id="rowAportePareja" class="muted">Aporte de la pareja</div><div id="s_montoParejaAporta">—</div>
+            <div id="rowComentarioPareja" class="muted">Comentario</div><div id="s_comentarioPareja">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn ghost" type="button" id="back2">Anterior</button>
+        <button class="btn primary" type="button" onclick="alert('Finalizar / Guardar')">Finalizar</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Soporte (demo) -->
+  <div id="supportModal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <h2>Bienvenido a soporte técnico</h2>
+      <p>Cualquier problema que presente la página, escríbanos abajo su problema y lo resolveremos lo más pronto posible.</p>
+      <textarea id="supportText" placeholder="Describe tu problema..."></textarea>
+      <div class="modal-actions">
+        <button id="closeSupport" class="btn ghost" type="button">Cancelar</button>
+        <button id="sendSupport" class="btn primary" type="button">Enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de confirmación -->
+  <div id="toast" class="toast">Se ha enviado tu reporte satisfactoriamente</div>
+
+  <script>
+    const stepText = document.getElementById('stepText');
+    const v1 = document.getElementById('view-1');
+    const v2 = document.getElementById('view-2');
+    const v3 = document.getElementById('view-3');
+
+    const STORAGE = 'eco_wizard_v5';
+    const data = JSON.parse(localStorage.getItem(STORAGE) || '{}');
+
+    function show(el){ el.removeAttribute('hidden'); }
+    function hide(el){ el.setAttribute('hidden',''); }
+    const money = (x)=> x? `$${Number(x).toLocaleString()}` : '—';
+    const setTxt = (id,val)=> document.getElementById(id).textContent = val || '—';
+    const n = (x)=>{ const v = parseFloat(x); return isNaN(v)?0:v; };
+
+    // === Menú y utilidades ===
+    const menuBtn = document.getElementById('menuBtn');
+    const menuPanel = document.getElementById('menuPanel');
+    const toast = document.getElementById('toast');
+    const supportModal = document.getElementById('supportModal');
+    const miTheme = document.getElementById('miTheme');
+    const miLang = document.getElementById('miLang');
+    const miSupport = document.getElementById('miSupport');
+    const miLogout = document.getElementById('miLogout');
+
+    function toggleMenu(open){
+      menuPanel.classList[open?'add':'remove']('open');
+      menuPanel.setAttribute('aria-hidden', open? 'false':'true');
+    }
+    menuBtn.addEventListener('click', (e)=>{ e.stopPropagation(); toggleMenu(!menuPanel.classList.contains('open')); });
+    document.addEventListener('click', ()=> toggleMenu(false));
+
+    // Tema oscuro/claro
+    miTheme.addEventListener('click', ()=>{
+      document.body.classList.toggle('dark');
+      miTheme.textContent = document.body.classList.contains('dark') ? 'Modo claro' : 'Modo oscuro';
+      toggleMenu(false);
+    });
+
+    // Idioma (demo)
+    let currentLang = document.documentElement.lang || 'es';
+    miLang.addEventListener('click', ()=>{
+      currentLang = currentLang === 'es' ? 'en' : 'es';
+      document.documentElement.lang = currentLang;
+      showToast(currentLang === 'es' ? 'Idioma cambiado a Español' : 'Language switched to English');
+      toggleMenu(false);
+    });
+
+    // Soporte
+    function openSupport(){ supportModal.classList.add('open'); supportModal.setAttribute('aria-hidden','false'); }
+    function closeSupport(){ supportModal.classList.remove('open'); supportModal.setAttribute('aria-hidden','true'); }
+    miSupport.addEventListener('click', ()=>{ openSupport(); toggleMenu(false); });
+    document.getElementById('closeSupport').addEventListener('click', closeSupport);
+    document.getElementById('sendSupport').addEventListener('click', ()=>{
+      closeSupport();
+      document.getElementById('supportText').value='';
+      showToast('Se ha enviado tu reporte satisfactoriamente');
+    });
+
+    // Logout (demo)
+    miLogout.addEventListener('click', ()=>{
+      localStorage.removeItem('eco_current_user');
+      showToast('Sesión cerrada (demo)');
+      toggleMenu(false);
+      // window.location.href = 'login.html'; // Si quieres redirigir al login real
+    });
+
+    function showToast(msg){
+      if(!toast) return;
+      toast.textContent = msg;
+      toast.style.display='block';
+      setTimeout(()=> toast.style.display='none', 2000);
+    }
+
+    // ===== PASO 1 =====
+    document.getElementById('form1').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const estadoCivil = document.querySelector('input[name="estadoCivil"]:checked')?.value || 'soltero';
+      const tieneDependientes = document.querySelector('input[name="tieneDependientes"]:checked')?.value || 'no';
+      const parejaAporta = document.querySelector('input[name="parejaAporta"]:checked')?.value || 'no';
+      const apoyaTerceros = document.querySelector('input[name="apoyaTerceros"]:checked')?.value || 'no';
+
+      Object.assign(data, {estadoCivil, tieneDependientes, parejaAporta, apoyaTerceros});
+      localStorage.setItem(STORAGE, JSON.stringify(data));
+
+      buildStep2From(data);
+      hide(v1); show(v2); stepText.textContent = 'Paso 2 de 3';
+    });
+
+    function display(id, on){ document.getElementById(id).style.display = on ? 'block' : 'none'; }
+
+    // ===== Construye PASO 2 =====
+    function buildStep2From(d){
+      // Siempre base
+      display('flowBase', true);
+      // Reset condicionales
+      ['flowApoyo','flowDependientes','flowPareja'].forEach(id=>display(id,false));
+      document.getElementById('parejaNoAporta').style.display='none';
+      document.getElementById('parejaSiAporta').style.display='none';
+
+      const isPareja = (d.estadoCivil==='pareja_sin_hijos' || d.estadoCivil==='pareja_con_hijos');
+      if(d.apoyaTerceros==='si') display('flowApoyo', true);
+      if(d.tieneDependientes==='si') display('flowDependientes', true);
+      if(isPareja){
+        display('flowPareja', true);
+        if(d.parejaAporta==='si'){
+          document.getElementById('parejaSiAporta').style.display='grid';
+        }else{
+          document.getElementById('parejaNoAporta').style.display='grid';
+        }
+      }
+
+      const active = {
+        base:true,
+        apoyo: d.apoyaTerceros==='si',
+        dep: d.tieneDependientes==='si',
+        pareja: isPareja
+      };
+      Object.assign(data, {activeFlows: active});
+      localStorage.setItem(STORAGE, JSON.stringify(data));
+    }
+
+    // Back
+    document.getElementById('back1').addEventListener('click', ()=>{
+      hide(v2); show(v1); stepText.textContent = 'Paso 1 de 3';
+    });
+
+    // ===== PASO 2 → PASO 3 =====
+    document.getElementById('form2').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const g = (id)=> document.getElementById(id)?.value || '';
+      const act = (data.activeFlows||{});
+
+      if(act.base){
+        Object.assign(data, {
+          ingresoMensual: g('ingresoMensual'), otrosIngresos: g('otrosIngresos'),
+          serviciosBasicos: g('serviciosBasicos'), suscripciones: g('suscripciones'),
+          transportePublico: g('transportePublico'), gasolina: g('gasolina'),
+          alimentacion: g('alimentacion'), renta: g('renta'), salud: g('salud'), deudas: g('deudas')
+        });
+      }
+      if(act.apoyo){
+        Object.assign(data, {
+          relacion: g('relacion'), frecuenciaApoyo: g('frecuenciaApoyo'),
+          montoApoyo: g('montoApoyo'), conceptoApoyo: g('conceptoApoyo')
+        });
+      }
+      if(act.dep){
+        Object.assign(data, {
+          cantidadDependientes: g('cantidadDependientes'),
+          gastoMensualDependientes: g('gastoMensualDependientes'),
+          educacionDep: g('educacionDep'), saludDep: g('saludDep')
+        });
+      }
+      if(act.pareja){
+        const comentarioAporta = g('comentarioParejaAporta');
+        const comentarioNoAporta = g('comentarioPareja');
+        const comentario = comentarioAporta || comentarioNoAporta;
+        Object.assign(data, {
+          montoParaPareja: g('montoParaPareja'),
+          montoParejaAporta: g('montoParejaAporta'),
+          comentarioPareja: comentario
+        });
+      }
+
+      localStorage.setItem(STORAGE, JSON.stringify(data));
+      fillSummary(data);
+      hide(v2); show(v3); stepText.textContent = 'Paso 3 de 3';
+    });
+
+    // ===== Llenar Resumen =====
+    function fillSummary(d){
+      setTxt('s_estado', mapEstado(d.estadoCivil));
+      setTxt('s_dep', d.tieneDependientes==='si' ? 'Sí' : 'No');
+      setTxt('s_apoya', d.apoyaTerceros==='si' ? 'Sí' : 'No');
+      setTxt('s_pareja', (d.estadoCivil==='pareja_sin_hijos'||d.estadoCivil==='pareja_con_hijos') ? (d.parejaAporta==='si'?'Sí':'No') : '—');
+
+      // Base
+      setTxt('s_ingresoMensual', money(d.ingresoMensual));
+      setTxt('s_otrosIngresos', money(d.otrosIngresos));
+      setTxt('s_serviciosBasicos', money(d.serviciosBasicos));
+      setTxt('s_suscripciones', money(d.suscripciones));
+      setTxt('s_transportePublico', money(d.transportePublico));
+      setTxt('s_gasolina', money(d.gasolina));
+      setTxt('s_alimentacion', money(d.alimentacion));
+      setTxt('s_renta', money(d.renta));
+      setTxt('s_salud', money(d.salud));
+      setTxt('s_deudas', money(d.deudas));
+
+      // Totales
+      const ingresos = n(d.ingresoMensual) + n(d.otrosIngresos) + ((d.activeFlows && d.activeFlows.pareja && d.parejaAporta==='si') ? n(d.montoParejaAporta) : 0);
+      const gastosBase = n(d.serviciosBasicos) + n(d.suscripciones) + n(d.transportePublico) + n(d.gasolina) + n(d.alimentacion) + n(d.renta) + n(d.salud) + n(d.deudas);
+      const gastosApoyo = (d.activeFlows && d.activeFlows.apoyo) ? n(d.montoApoyo) : 0;
+      const depDetalle = n(d.educacionDep) + n(d.saludDep);
+      const gastosDependientes = (d.activeFlows && d.activeFlows.dep) ? (depDetalle>0 ? depDetalle : n(d.gastoMensualDependientes)) : 0;
+      const gastosPareja = (d.activeFlows && d.activeFlows.pareja && d.parejaAporta==='no') ? n(d.montoParaPareja) : 0;
+      const totalGastos = gastosBase + gastosApoyo + gastosDependientes + gastosPareja;
+      const dineroLibre = ingresos - totalGastos;
+      setTxt('s_totalGastos', money(totalGastos));
+      setTxt('s_dineroLibre', money(dineroLibre));
+
+      // Condicionales
+      const act = d.activeFlows || {};
+      document.getElementById('cardApoyo').hidden = !act.apoyo;
+      if(act.apoyo){
+        setTxt('s_relacion', d.relacion);
+        setTxt('s_frecuenciaApoyo', d.frecuenciaApoyo);
+        setTxt('s_montoApoyo', money(d.montoApoyo));
+        setTxt('s_conceptoApoyo', d.conceptoApoyo);
+      }
+
+      document.getElementById('cardDep').hidden = !act.dep;
+      if(act.dep){
+        setTxt('s_cantidadDependientes', d.cantidadDependientes);
+        setTxt('s_gastoMensualDependientes', money(d.gastoMensualDependientes));
+        setTxt('s_educacionDep', money(d.educacionDep));
+        setTxt('s_saludDep', money(d.saludDep));
+      }
+
+      document.getElementById('cardPareja').hidden = !act.pareja;
+      if(act.pareja){
+        const enPareja = (d.estadoCivil==='pareja_sin_hijos'||d.estadoCivil==='pareja_con_hijos');
+        const aporta = enPareja && d.parejaAporta==='si';
+        // Mostrar/ocultar filas
+        showPair('rowMontoPara','s_montoParaPareja', !aporta);
+        showPair('rowAportePareja','s_montoParejaAporta', aporta);
+        showPair('rowComentarioPareja','s_comentarioPareja', !!(d.comentarioPareja && d.comentarioPareja.trim()));
+        // Valores
+        setTxt('s_montoParaPareja', money(d.montoParaPareja));
+        setTxt('s_montoParejaAporta', money(d.montoParejaAporta));
+        setTxt('s_comentarioPareja', d.comentarioPareja || '—');
+      }
+    }
+
+    function toggleCard(id, showIt, fillFn){
+      const el = document.getElementById(id);
+      if(showIt){ el.hidden = false; fillFn && fillFn(); }
+      else { el.hidden = true; }
+    }
+    function showPair(labelId, valueId, on){
+      const l = document.getElementById(labelId);
+      const v = document.getElementById(valueId);
+      if(!l || !v) return;
+      l.style.display = on ? '' : 'none';
+      v.style.display = on ? '' : 'none';
+    }
+
+    document.getElementById('back2').addEventListener('click', ()=>{
+      hide(v3); show(v2); stepText.textContent = 'Paso 2 de 3';
+    });
+
+    function mapEstado(v){
+      return ({soltero:'Soltero/a', pareja_sin_hijos:'Casado/a o en pareja sin hijos', pareja_con_hijos:'Casado/a o en pareja con hijos', otro:'Otro'})[v] || '—';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EcoFinanzas · Acceso</title>
+  <style>
+    :root{--bg:#f5f7fb;--card:#fff;--ink:#0e1726;--muted:#5b6573;--brand:#1a73e8;--line:#e6eaf0;--ok:#2563eb;--err:#dc2626;--radius:16px;--shadow:0 10px 30px rgba(17,24,39,.08)}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#f7f9ff, #eef3ff);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .wrap{max-width:1040px;margin:0 auto;padding:32px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .logo{display:flex;gap:10px;align-items:center;color:var(--brand);font-weight:800;font-size:22px}
+    .logo svg{width:22px;height:22px}
+
+    .card{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    @media(max-width:900px){.card{grid-template-columns:1fr}}
+    .left{padding:30px}
+    .right{background:#0f172a url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%221200%22 height=%22800%22><defs><linearGradient id=%22g%22 x1=%220%22 x2=%221%22 y1=%220%22 y2=%221%22><stop stop-color=%22%230a54d1%22/><stop offset=%221%22 stop-color=%22%230a7bd1%22/></linearGradient></defs><rect width=%22100%25%22 height=%22100%25%22 fill=%22url(%23g)%22/></svg>') center/cover;color:#fff;padding:30px;display:flex;flex-direction:column;justify-content:flex-end}
+    .right h2{margin:0 0 8px}
+    .right p{opacity:.9;margin:0}
+
+    .tabs{display:flex;background:#f1f5ff;border-radius:12px;padding:6px;width:max-content;margin-bottom:18px}
+    .tab{appearance:none;border:0;background:transparent;padding:8px 14px;border-radius:10px;font-weight:800;color:#3b5183;cursor:pointer}
+    .tab.active{background:#fff;color:#0e1726;box-shadow:0 2px 8px rgba(2,8,23,.08)}
+
+    form{display:grid;gap:14px}
+    label{font-weight:700}
+    input[type="text"],input[type="email"],input[type="password"]{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff}
+
+    .row{display:grid;gap:14px}
+    @media(min-width:760px){.row.two{grid-template-columns:1fr 1fr}}
+
+    .inline{display:flex;align-items:center;justify-content:space-between;gap:12px}
+
+    .hint{color:var(--muted);font-size:14px}
+    .error{background:#fee2e2;border:1px solid #fecaca;color:#7f1d1d;padding:10px 12px;border-radius:10px;display:none}
+    .ok{background:#e0f2fe;border:1px solid #bae6fd;color:#0c4a6e;padding:10px 12px;border-radius:10px;display:none}
+
+    .actions{display:flex;gap:12px;margin-top:6px}
+    .btn{appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
+    .btn.primary{background:var(--brand);color:#fff;box-shadow:0 10px 22px rgba(26,115,232,.22)}
+    .btn.ghost{background:#eef2ff;color:#1f3bb3}
+
+    .toggle-pass{font-size:13px;font-weight:700;color:#1f3bb3;background:transparent;border:0;cursor:pointer}
+    .footer{margin-top:18px;color:#94a3b8;font-size:13px}
+    a{color:#1a73e8;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2v6M12 16v6M2 12h6M16 12h6M5 5l4 4M15 15l4 4M5 19l4-4M15 9l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>EcoFinanzas</span>
+      </div>
+      <div class="hint">Accede para ver tu <strong>Resumen Financiero</strong></div>
+    </header>
+
+    <section class="card">
+      <div class="left">
+        <div class="tabs" role="tablist">
+          <button id="tabLogin" class="tab active" role="tab" aria-selected="true">Iniciar sesión</button>
+          <button id="tabRegister" class="tab" role="tab" aria-selected="false">Crear cuenta</button>
+        </div>
+
+        <!-- Alertas -->
+        <div id="alertErr" class="error"></div>
+        <div id="alertOk" class="ok"></div>
+
+        <!-- LOGIN -->
+        <form id="formLogin" autocomplete="on">
+          <label for="loginEmail">Correo electrónico</label>
+          <input id="loginEmail" type="email" placeholder="tucorreo@ejemplo.com" required>
+
+          <div>
+            <div class="inline">
+              <label for="loginPass">Contraseña</label>
+              <button type="button" class="toggle-pass" data-target="#loginPass">Mostrar</button>
+            </div>
+            <input id="loginPass" type="password" placeholder="••••••••" required>
+          </div>
+
+          <div class="inline">
+            <label class="hint"><input id="remember" type="checkbox"> Recordarme</label>
+            <a href="#" class="hint" onclick="alert('Recuperación de contraseña (demo)')">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" type="submit">Entrar</button>
+            <button class="btn ghost" type="button" id="toRegister">Crear cuenta</button>
+          </div>
+        </form>
+
+        <!-- REGISTER -->
+        <form id="formRegister" style="display:none" autocomplete="on">
+          <div class="row two">
+            <div>
+              <label for="regName">Nombre</label>
+              <input id="regName" type="text" placeholder="Tu nombre" required>
+            </div>
+            <div>
+              <label for="regEmail">Correo electrónico</label>
+              <input id="regEmail" type="email" placeholder="tucorreo@ejemplo.com" required>
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <div class="inline">
+                <label for="regPass">Contraseña</label>
+                <button type="button" class="toggle-pass" data-target="#regPass">Mostrar</button>
+              </div>
+              <input id="regPass" type="password" minlength="6" placeholder="Mínimo 6 caracteres" required>
+            </div>
+            <div>
+              <div class="inline">
+                <label for="regPass2">Confirmar contraseña</label>
+                <button type="button" class="toggle-pass" data-target="#regPass2">Mostrar</button>
+              </div>
+              <input id="regPass2" type="password" minlength="6" placeholder="Repite tu contraseña" required>
+            </div>
+          </div>
+
+          <label class="hint"><input id="terms" type="checkbox" required> Acepto los términos y condiciones</label>
+
+          <div class="actions">
+            <button class="btn ghost" type="button" id="toLogin">Ya tengo cuenta</button>
+            <button class="btn primary" type="submit">Crear cuenta</button>
+          </div>
+        </form>
+
+        <div class="footer">Demo local sin servidor. Los datos se guardan en tu navegador (localStorage). Al iniciar sesión te llevamos a <strong>Resumen Financiero.html</strong>.</div>
+      </div>
+
+      <aside class="right" aria-hidden="true">
+        <h2>Tu dinero, bajo control</h2>
+        <p>Analiza tus gastos, define metas y mira recomendaciones personalizadas en minutos.</p>
+      </aside>
+    </section>
+  </div>
+
+  <script>
+    // ===== Utilidades =====
+    const $ = (q)=>document.querySelector(q);
+    const show = (el)=>{ el.style.display='block'; };
+    const hide = (el)=>{ el.style.display='none'; };
+    const emailOk = (e)=>/^\S+@\S+\.\S+$/.test(e);
+
+    // ===== Tabs =====
+    const tabLogin = $('#tabLogin');
+    const tabRegister = $('#tabRegister');
+    const formLogin = $('#formLogin');
+    const formRegister = $('#formRegister');
+
+    function activate(tab){
+      if(tab==='login'){
+        tabLogin.classList.add('active'); tabRegister.classList.remove('active');
+        show(formLogin); hide(formRegister);
+        tabLogin.setAttribute('aria-selected','true');
+        tabRegister.setAttribute('aria-selected','false');
+      }else{
+        tabRegister.classList.add('active'); tabLogin.classList.remove('active');
+        show(formRegister); hide(formLogin);
+        tabRegister.setAttribute('aria-selected','true');
+        tabLogin.setAttribute('aria-selected','false');
+      }
+      clearAlerts();
+    }
+    tabLogin.addEventListener('click',()=>activate('login'));
+    tabRegister.addEventListener('click',()=>activate('register'));
+    $('#toRegister').addEventListener('click',()=>activate('register'));
+    $('#toLogin').addEventListener('click',()=>activate('login'));
+
+    // ===== Toggle mostrar/ocultar contraseña =====
+    document.querySelectorAll('.toggle-pass').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const target = document.querySelector(btn.dataset.target);
+        if(!target) return;
+        target.type = target.type==='password' ? 'text' : 'password';
+        btn.textContent = target.type==='password' ? 'Mostrar' : 'Ocultar';
+      });
+    });
+
+    // ===== Almacenamiento local (demo) =====
+    const DB_KEY = 'eco_users_v1';
+    function getDb(){ return JSON.parse(localStorage.getItem(DB_KEY)||'{}'); }
+    function setDb(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+    // ===== Alertas =====
+    const err = $('#alertErr');
+    const ok = $('#alertOk');
+    function showErr(msg){ err.textContent = msg; err.style.display='block'; ok.style.display='none'; }
+    function showOk(msg){ ok.textContent = msg; ok.style.display='block'; err.style.display='none'; }
+    function clearAlerts(){ err.style.display='none'; ok.style.display='none'; }
+
+    // ===== Registro =====
+    formRegister.addEventListener('submit',(e)=>{
+      e.preventDefault(); clearAlerts();
+      const name = $('#regName').value.trim();
+      const email = $('#regEmail').value.trim().toLowerCase();
+      const p1 = $('#regPass').value; const p2 = $('#regPass2').value;
+      const terms = $('#terms').checked;
+
+      if(!name) return showErr('Por favor, escribe tu nombre.');
+      if(!emailOk(email)) return showErr('Correo inválido.');
+      if(p1.length < 6) return showErr('La contraseña debe tener al menos 6 caracteres.');
+      if(p1 !== p2) return showErr('Las contraseñas no coinciden.');
+      if(!terms) return showErr('Debes aceptar los términos y condiciones.');
+
+      const db = getDb();
+      if(db[email]) return showErr('Este correo ya está registrado. Inicia sesión.');
+
+      db[email] = { name, email, pass: p1, createdAt: Date.now() };
+      setDb(db);
+      showOk('Cuenta creada. Ahora puedes iniciar sesión.');
+      activate('login');
+      $('#loginEmail').value = email;
+    });
+
+    // ===== Login =====
+    formLogin.addEventListener('submit',(e)=>{
+      e.preventDefault(); clearAlerts();
+      const email = $('#loginEmail').value.trim().toLowerCase();
+      const pass = $('#loginPass').value;
+      if(!emailOk(email)) return showErr('Correo inválido.');
+      const db = getDb();
+      if(!db[email]) return showErr('No existe una cuenta con este correo. Crea una.');
+      if(db[email].pass !== pass) return showErr('Contraseña incorrecta.');
+
+      // Guardar sesión (demo)
+      localStorage.setItem('eco_current_user', JSON.stringify({email, name: db[email].name}));
+      showOk('Acceso concedido. Redirigiendo…');
+      setTimeout(()=>{ window.location.href = 'Resumen Financiero.html'; }, 600);
+    });
+
+    // Foco inicial
+    $('#loginEmail').focus();
+  </script>
+</body>
+</html>
